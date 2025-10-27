@@ -4,6 +4,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# 빌드 산출물
+dist/
+*.tsbuildinfo
+
 # 출력 파일
 *.docx
 *_output.docx
