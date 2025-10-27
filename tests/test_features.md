@@ -52,7 +52,9 @@
 
 이 문단은 **굵은 텍스트**, _기울임_, `코드`를 모두 포함합니다.
 
-또한 [중요한 링크](https://important-site.com)와 ![중요 이미지](important.png)도 있습니다.
+또한 [중요한 링크](https://important-site.com)도 있습니다.
+
+![중요 이미지](important.png)
 
 ## 인용문과 링크
 

@@ -36,28 +36,8 @@ export function parseInlineFormatting(text: string, fontFamily: string = "맑은
       continue;
     }
 
-    // ![alt](image) 처리 (이미지 링크)
-    if (i < text.length - 3 && text[i] === "!" && text[i + 1] === "[") {
-      const altEnd = text.indexOf("]", i + 2);
-      const urlStart = text.indexOf("(", altEnd);
-      const urlEnd = text.indexOf(")", urlStart);
-
-      if (altEnd !== -1 && urlStart !== -1 && urlEnd !== -1) {
-        const altText = text.substring(i + 2, altEnd);
-        const imageUrl = text.substring(urlStart + 1, urlEnd);
-
-        runs.push(
-          new TextRun({
-            text: `[이미지: ${altText || imageUrl}]`,
-            italics: true,
-            color: "666666",
-            font: fontFamily,
-          })
-        );
-        i = urlEnd + 1;
-        continue;
-      }
-    }
+    // ![alt](image) 처리는 이제 markdownParser에서 별도 ImageElement로 처리됨
+    // inlineFormatter에서는 단순 텍스트로 이미지 마크다운을 무시 (단락 내 실수로 남은 경우)
 
     // [text](url) 처리 (링크)
     if (i < text.length - 3 && text[i] === "[") {

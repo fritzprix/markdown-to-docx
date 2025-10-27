@@ -122,6 +122,52 @@ export function parseImageMarkdown(text: string): ImageElement | null {
   return image;
 }
 
+// 단락 텍스트에서 인라인 이미지 추출
+export function extractInlineImages(text: string): ParsedElement[] {
+  const elements: ParsedElement[] = [];
+  const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+  let lastIndex = 0;
+  let match;
+
+  // 정규표현식 exec 루프에서 할당이 필요함
+  // noinspection JSAssignmentUsedAsCondition (WebStorm IDE comment)
+  while ((match = imageRegex.exec(text)) !== null) {
+    // 이미지 전의 텍스트
+    if (match.index > lastIndex) {
+      const beforeText = text.substring(lastIndex, match.index);
+      if (beforeText.trim()) {
+        elements.push({ type: "paragraph", text: beforeText });
+      }
+    }
+
+    // 이미지 처리
+    const alt = match[1] || "Image";
+    const src = match[2];
+    elements.push({
+      type: "image",
+      alt,
+      src,
+    } as ImageElement);
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // 마지막 텍스트
+  if (lastIndex < text.length) {
+    const afterText = text.substring(lastIndex);
+    if (afterText.trim()) {
+      elements.push({ type: "paragraph", text: afterText });
+    }
+  }
+
+  // 이미지가 없으면 원본 텍스트 반환
+  if (elements.length === 0) {
+    return [{ type: "paragraph", text }];
+  }
+
+  return elements;
+}
+
 // 테이블 파싱 함수 (| header | 형식)
 export function parseTableMarkdown(lines: string[], startIndex: number): TableElement | null {
   const tableLines: string[] = [];
@@ -265,8 +311,16 @@ export function parseMarkdown(content: string, options: ParseOptions = {}): Pars
       continue;
     }
 
-    // 일반 단락
-    elements.push({ type: "paragraph", text: line });
+    // 일반 단락 (인라인 이미지 추출)
+    const paragraphElements = extractInlineImages(line);
+    elements.push(...paragraphElements);
+    if (verbose && paragraphElements.some((e) => e.type === "image")) {
+      paragraphElements.forEach((e) => {
+        if (e.type === "image") {
+          console.log(`Image (inline): ${(e as ImageElement).alt} (${(e as ImageElement).src})`);
+        }
+      });
+    }
     i++;
   }
 
