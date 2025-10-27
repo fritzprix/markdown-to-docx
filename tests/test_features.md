@@ -17,11 +17,19 @@
 
 ## 이미지 링크 예제
 
-프로젝트 로고: ![프로젝트 로고](https://example.com/logo.png)
+### 로컬 이미지
 
-스크린샷: ![앱 스크린샷](./screenshots/app.png)
+![귀여운 고양이](./cute.jpg)
 
-마못 사진: ![Rocky Mountains Canadian Marmot](https://png.pngtree.com/thumb_back/fw800/background/20240418/pngtree-rocky-mountains-canadian-marmot-portrait-image_15662196.jpg)
+이 귀여운 고양이 사진은 로컬 파일입니다.
+
+### 원격 이미지
+
+![프로젝트 로고](https://example.com/logo.png)
+
+![앱 스크린샷](./screenshots/app.png)
+
+![Rocky Mountains Canadian Marmot](https://png.pngtree.com/thumb_back/fw800/background/20240418/pngtree-rocky-mountains-canadian-marmot-portrait-image_15662196.jpg)
 
 ## 체크박스 예제
 

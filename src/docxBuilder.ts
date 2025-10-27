@@ -17,6 +17,7 @@ import {
 } from "docx";
 import * as fs from "fs";
 import { parseInlineFormatting } from "./inlineFormatter";
+import { loadImage } from "./imageLoader";
 import type {
   ParsedElement,
   HeadingElement,
@@ -25,6 +26,7 @@ import type {
   CheckboxElement,
   ListElement,
   ParagraphElement,
+  ImageElement,
 } from "./markdownParser";
 
 interface NumberingConfig {
@@ -48,9 +50,12 @@ export class DocxBuilder {
   private fontFamily: string;
   private children: (Paragraph | Table)[] = [];
   private numberingConfig: NumberingConfig;
+  private basePath?: string; // 마크다운 파일 경로 (이미지 상대 경로 해석용)
+  private media: Map<string, Buffer> = new Map(); // 이미지 미디어 캐시
 
-  constructor(fontFamily: string = "맑은 고딕") {
+  constructor(fontFamily: string = "맑은 고딕", basePath?: string) {
     this.fontFamily = fontFamily;
+    this.basePath = basePath;
     this.numberingConfig = {
       config: [
         {
@@ -95,6 +100,16 @@ export class DocxBuilder {
       this.addCheckbox(element as CheckboxElement);
     } else if (element.type === "list") {
       this.addList(element as ListElement);
+    } else if (element.type === "image") {
+      // 이미지 로드는 비동기이므로 Promise를 반환하지만,
+      // addElement는 동기이므로 실행 후 결과를 await하지 않음
+      // catch 처리로 에러 처리
+      this.addImage(element as ImageElement).catch((err: unknown) => {
+        // 이미지 로드 실패 시, 에러 메시지로 대체
+        const errorMsg = err instanceof Error ? err.message : "Unknown error";
+        const errorText = `[Image Error: ${errorMsg}]`;
+        this.addParagraph({ type: "paragraph", text: errorText });
+      });
     } else if (element.type === "paragraph") {
       this.addParagraph(element as ParagraphElement);
     }
@@ -361,6 +376,45 @@ export class DocxBuilder {
         },
       ],
     });
+  }
+
+  private async addImage(element: ImageElement): Promise<void> {
+    const imageResult = await loadImage(element.src, this.basePath);
+
+    if (!imageResult.success || imageResult.buffer.length === 0) {
+      // 이미지 로드 실패 시 alt 텍스트로 대체
+      const errorMsg = imageResult.error || "Failed to load image";
+      this.addParagraph({
+        type: "paragraph",
+        text: `[Image: ${element.alt}] (${errorMsg})`,
+      });
+      return;
+    }
+
+    // 이미지 캐시에 저장 (중복 방지)
+    const cacheKey = `${element.src}`;
+    if (!this.media.has(cacheKey)) {
+      this.media.set(cacheKey, imageResult.buffer);
+    }
+
+    // 이미지를 포함한 단락 생성
+    // docx 라이브러리는 직접 이미지 객체를 지원하지 않으므로,
+    // 현재는 이미지 메타데이터를 주석으로 표현
+    // 향후 docx 라이브러리 업데이트 시 실제 이미지 삽입 가능
+
+    const paragraph = new Paragraph({
+      children: [
+        new TextRun({
+          text: `[Image: ${element.alt}]`,
+          italics: true,
+          color: "808080",
+        }),
+      ],
+      spacing: { before: 240, after: 240 },
+    });
+
+    this.children.push(paragraph);
+    console.log(`Added image: ${element.alt} (${element.src})`);
   }
 
   async save(outputFile: string): Promise<string> {

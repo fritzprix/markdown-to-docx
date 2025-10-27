@@ -2,6 +2,7 @@
 // 메인 라이브러리 진입점
 
 import * as fs from "fs";
+import * as path from "path";
 import { parseMarkdown, type ParseOptions } from "./markdownParser";
 import { parseInlineFormatting } from "./inlineFormatter";
 import { DocxBuilder } from "./docxBuilder";
@@ -31,12 +32,14 @@ export async function convertMarkdownToDOCX(
   }
 
   const content = fs.readFileSync(inputFile, "utf-8");
+  // 마크다운 파일 디렉토리 (이미지 상대 경로 해석용)
+  const basePath = path.dirname(path.resolve(inputFile));
 
   // 마크다운 파싱
   const elements = parseMarkdown(content, { verbose });
 
-  // DOCX 생성
-  const builder = new DocxBuilder(fontFamily);
+  // DOCX 생성 (basePath 전달)
+  const builder = new DocxBuilder(fontFamily, basePath);
   elements.forEach((element) => {
     builder.addElement(element);
   });

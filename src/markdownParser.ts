@@ -37,13 +37,22 @@ export interface ParagraphElement {
   text: string;
 }
 
+export interface ImageElement {
+  type: "image";
+  alt: string; // alt 텍스트
+  src: string; // 이미지 경로 또는 URL
+  width?: number; // 선택적 너비 (포인트 단위)
+  height?: number; // 선택적 높이 (포인트 단위)
+}
+
 export type ParsedElement =
   | TableElement
   | CheckboxElement
   | HeadingElement
   | ListElement
   | BlockquoteElement
-  | ParagraphElement;
+  | ParagraphElement
+  | ImageElement;
 
 export interface ParseOptions {
   verbose?: boolean;
@@ -73,6 +82,44 @@ export function restoreHtmlMarkup(text: string): string {
   // eslint-disable-next-line no-control-regex
   text = text.replace(/\u0001HR\u0001/g, "─────────────────────");
   return text;
+}
+
+// 마크다운 이미지 링크 파싱 함수 ![alt](src)
+export function parseImageMarkdown(text: string): ImageElement | null {
+  // ![alt text](image.png) 또는 ![alt](https://example.com/image.jpg) 형식
+  // 선택적 너비/높이: ![alt](path){width=200,height=150}
+  const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)(?:{([^}]*)})?/;
+  const match = text.match(imageRegex);
+
+  if (!match) {
+    return null;
+  }
+
+  const alt = match[1] || "Image";
+  const src = match[2];
+  const optionsStr = match[3];
+
+  const image: ImageElement = {
+    type: "image",
+    alt,
+    src,
+  };
+
+  // 선택적 너비/높이 파싱
+  if (optionsStr) {
+    const widthMatch = optionsStr.match(/width\s*=\s*(\d+)/);
+    const heightMatch = optionsStr.match(/height\s*=\s*(\d+)/);
+
+    if (widthMatch) {
+      image.width = parseInt(widthMatch[1], 10);
+    }
+
+    if (heightMatch) {
+      image.height = parseInt(heightMatch[1], 10);
+    }
+  }
+
+  return image;
 }
 
 // 테이블 파싱 함수 (| header | 형식)
@@ -182,6 +229,15 @@ export function parseMarkdown(content: string, options: ParseOptions = {}): Pars
       continue;
     }
 
+    // 이미지 처리
+    const imageResult = parseImageMarkdown(line);
+    if (imageResult) {
+      elements.push(imageResult);
+      if (verbose) console.log(`Image: ${imageResult.alt} (${imageResult.src})`);
+      i++;
+      continue;
+    }
+
     // 블록 인용 처리
     if (line.trim().startsWith(">")) {
       const quoteText = line.replace(/^>\s*/, "");
@@ -221,8 +277,9 @@ export function parseMarkdown(content: string, options: ParseOptions = {}): Pars
     const checkboxes = elements.filter((e) => e.type === "checkbox").length;
     const tables = elements.filter((e) => e.type === "table").length;
     const quotes = elements.filter((e) => e.type === "blockquote").length;
+    const images = elements.filter((e) => e.type === "image").length;
     console.log(
-      `Headings: ${headings}, Lists: ${lists}, Checkboxes: ${checkboxes}, Tables: ${tables}, Quotes: ${quotes}\n`
+      `Headings: ${headings}, Lists: ${lists}, Checkboxes: ${checkboxes}, Tables: ${tables}, Quotes: ${quotes}, Images: ${images}\n`
     );
   }
 
