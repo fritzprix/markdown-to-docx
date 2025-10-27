@@ -7,21 +7,25 @@
 ## 주요 특징
 
 ✅ **완전한 마크다운 지원**
+
 - 제목 (H1-H6), 목록, 인용문
 - 테이블, 체크박스
-- 인라인 포맷팅 (**bold**, *italic*, `code`)
+- 인라인 포맷팅 (**bold**, _italic_, `code`)
 - 링크 및 이미지 링크
 
 ✅ **TypeScript + 타입 안정성**
+
 - 완벽한 타입 정의 및 인터페이스
 - 런타임 에러 방지
 
 ✅ **개발 환경**
+
 - ESLint 기반 코드 검사
 - Prettier 기반 자동 포맷팅
 - npm 스크립트로 간편한 실행
 
 ✅ **배포 준비**
+
 - npm 전역 설치 지원
 - npx 실행 가능
 - package.json bin 필드 설정
@@ -72,15 +76,15 @@ await convertMarkdownToDOCX("input.md", "output.docx", {
 
 ## npm 스크립트
 
-| 스크립트 | 설명 |
-|---------|------|
-| `npm run build` | TypeScript 컴파일 (dist 생성) |
-| `npm start` | 빌드 후 CLI 실행 |
-| `npm run dev` | ts-node로 개발 모드 실행 |
-| `npm run lint` | ESLint로 코드 검사 |
-| `npm run lint:fix` | ESLint로 자동 수정 |
-| `npm run format` | Prettier로 포맷팅 |
-| `npm run format:check` | 포맷팅 확인 (수정 없음) |
+| 스크립트               | 설명                          |
+| ---------------------- | ----------------------------- |
+| `npm run build`        | TypeScript 컴파일 (dist 생성) |
+| `npm start`            | 빌드 후 CLI 실행              |
+| `npm run dev`          | ts-node로 개발 모드 실행      |
+| `npm run lint`         | ESLint로 코드 검사            |
+| `npm run lint:fix`     | ESLint로 자동 수정            |
+| `npm run format`       | Prettier로 포맷팅             |
+| `npm run format:check` | 포맷팅 확인 (수정 없음)       |
 
 ## 프로젝트 구조
 
@@ -118,6 +122,7 @@ await convertMarkdownToDOCX("input.md", "output.docx", {
 마크다운 파일을 DOCX로 변환합니다.
 
 **매개변수:**
+
 - `inputFile` (string): 입력 마크다운 파일 경로
 - `outputFile` (string): 출력 DOCX 파일 경로
 - `options` (object):
@@ -131,6 +136,7 @@ await convertMarkdownToDOCX("input.md", "output.docx", {
 마크다운 텍스트를 구조화된 요소로 파싱합니다.
 
 **매개변수:**
+
 - `content` (string): 마크다운 텍스트
 - `options` (object):
   - `verbose` (boolean): 로그 출력 (기본값: true)
@@ -142,6 +148,7 @@ await convertMarkdownToDOCX("input.md", "output.docx", {
 DOCX 문서를 생성하는 빌더 클래스입니다.
 
 **메서드:**
+
 - `addElement(element)`: 요소 추가
 - `addHeading(element)`: 제목 추가
 - `addTable(element)`: 테이블 추가

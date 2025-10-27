@@ -21,63 +21,101 @@
 
 [nodejs.org](https://nodejs.org/)에서 다운로드 후 설치
 
-### 2. 의존성 설치 및 빌드
+### 2. npm에서 설치 (권장)
 
 ```bash
+npm install -g markdown-to-docx
+```
+
+### 3. 로컬에서 빌드 후 사용
+
+```bash
+# 저장소 클론
+git clone https://github.com/your-username/markdown-to-docx.git
+cd markdown-to-docx
+
+# 의존성 설치 및 빌드
 npm install
 npm run build
+
+# 전역 등록
+npm link
 ```
 
 ## 사용 방법
 
-### CLI 사용 (TypeScript 컴파일 후)
+### npm 전역 설치 후 (권장)
+
+```bash
+# 기본 사용 (input.md → output.docx)
+markdown-to-docx
+
+# 파일명 지정
+markdown-to-docx --input "마크다운파일.md"
+
+# 폰트 변경
+markdown-to-docx --font "나눔고딕"
+
+# 모든 옵션
+markdown-to-docx --input "문서.md" --output "결과.docx" --font "Arial"
+```
+
+### npx로 실행 (설치 없이)
+
+```bash
+npx markdown-to-docx --input "파일.md"
+```
+
+### 로컬 개발 환경에서 CLI 사용 (TypeScript 컴파일 후)
 
 #### 기본 사용 (input.md → output.docx)
 
 ```bash
 npm start
-# 또는
-markdown-to-docx
 ```
 
 #### 파일명 지정
 
 ```bash
 npm start -- --input "마크다운파일.md"
-# 또는
-markdown-to-docx --input "마크다운파일.md"
 ```
 
 #### 폰트 변경
 
 ```bash
 npm start -- --font "나눔고딕"
-# 또는
-markdown-to-docx --font "나눔고딕"
 ```
 
 #### 출력 파일명 지정
 
 ```bash
 npm start -- --input "source.md" --output "result.docx"
-# 또는
-markdown-to-docx --input "source.md" --output "result.docx"
 ```
 
 #### 옵션 조합
 
 ```bash
 npm start -- --input "문서.md" --output "결과.docx" --font "Arial"
-# 또는
-markdown-to-docx --input "문서.md" --output "결과.docx" --font "Arial"
 ```
 
-### 라이브러리 사용 (JavaScript)
+### TypeScript 개발 모드 (ts-node 사용)
 
-#### 기본 사용
+```bash
+npm run dev -- --input "파일.md"
+```
+
+또는
+
+```bash
+npx ts-node src/cli.ts --input "파일.md"
+```
+
+### 라이브러리로 사용 (JavaScript - npm 설치 후)
+
+#### Node.js 코드에서 사용
 
 ```javascript
-const { convertMarkdownToDOCX } = require("./dist/index");
+const { convertMarkdownToDOCX } = require("markdown-to-docx");
 
 convertMarkdownToDOCX("input.md", "output.docx", {
   fontFamily: "맑은 고딕",
@@ -87,11 +125,11 @@ convertMarkdownToDOCX("input.md", "output.docx", {
   .catch((error) => console.error(error));
 ```
 
-#### 커스텀 빌더 사용
+#### 커스텀 DocxBuilder 사용
 
 ```javascript
 const fs = require("fs");
-const { parseMarkdown, DocxBuilder } = require("./dist/index");
+const { parseMarkdown, DocxBuilder } = require("markdown-to-docx");
 
 // 마크다운 파싱
 const content = fs.readFileSync("input.md", "utf-8");
@@ -109,12 +147,12 @@ elements.forEach((element) => {
 builder.save("output.docx");
 ```
 
-### 라이브러리 사용 (TypeScript)
+### TypeScript로 사용
 
-#### 기본 사용
+#### Node.js 코드에서 사용 (import)
 
 ```typescript
-import { convertMarkdownToDOCX } from "./src/index";
+import { convertMarkdownToDOCX } from "markdown-to-docx";
 
 async function main() {
   const outputFile = await convertMarkdownToDOCX("input.md", "output.docx", {
@@ -127,22 +165,10 @@ async function main() {
 main().catch(console.error);
 ```
 
-#### 개발 중 ts-node로 직접 실행
-
-```bash
-npm run dev
-```
-
-또는
-
-```bash
-ts-node src/cli.ts --input "마크다운파일.md"
-```
-
-#### 커스텀 빌더 사용
+#### 커스텀 DocxBuilder 사용
 
 ```typescript
-import { parseMarkdown, DocxBuilder } from "./src/index";
+import { parseMarkdown, DocxBuilder } from "markdown-to-docx";
 import * as fs from "fs";
 
 async function main() {
@@ -163,6 +189,17 @@ async function main() {
 }
 
 main().catch(console.error);
+```
+
+### 로컬 개발 환경에서 라이브러리 사용
+
+```bash
+# 로컬 npm link
+cd markdown-to-docx
+npm link
+
+# 다른 프로젝트에서
+npm link markdown-to-docx
 ```
 
 ## 지원하는 마크다운 문법
@@ -257,18 +294,26 @@ markdown-to-docx/
 │   ├── inlineFormatter.ts        # 인라인 포맷팅 (bold, italic, link 등)
 │   └── docxBuilder.ts            # DOCX 문서 생성
 ├── dist/                         # 컴파일된 JavaScript (npm run build로 생성)
-│   ├── index.js, index.d.ts
+│   ├── index.js, index.d.ts      # - npm 배포 시 포함
 │   ├── cli.js, cli.d.ts
 │   ├── markdownParser.js, markdownParser.d.ts
 │   ├── inlineFormatter.js, inlineFormatter.d.ts
 │   └── docxBuilder.js, docxBuilder.d.ts
 ├── examples/                     # 사용 예제
-│   ├── basic-usage.js            # JavaScript 기본 사용 예제
-│   ├── advanced-usage.js         # JavaScript 고급 사용 예제
-│   └── ts-usage.ts               # TypeScript 사용 예제
-├── lib/                          # 레거시 JavaScript 소스 (더 이상 사용 안 함)
+│   ├── basic-usage.ts            # TypeScript 기본 사용 예제
+│   ├── advanced-usage.ts         # TypeScript 고급 사용 예제
+│   └── ts-usage.ts               # TypeScript 라이브러리 사용 예제
+├── tests/                        # 테스트 마크다운 파일
+│   ├── test_features.md
+│   ├── test_formatting.md
+│   └── test_html.md
+├── build/                        # 생성된 DOCX 파일 (git 제외)
 ├── tsconfig.json                 # TypeScript 설정
+├── eslint.config.cjs             # ESLint 설정 (v9+)
+├── .prettierrc                   # Prettier 포맷팅 설정
+├── .prettierignore               # Prettier 제외 파일
 ├── package.json                  # 프로젝트 설정 & npm 스크립트
+├── DEVELOPMENT.md                # 개발자 문서
 ├── README.md                     # 이 파일
 └── .gitignore
 ```
@@ -370,24 +415,110 @@ npm install docx
 
 Word에서 설정한 기본 폰트가 다를 수 있습니다. 문서를 연 후 "모두 선택(Ctrl+A)"으로 폰트를 변경하세요.
 
+## npm 배포
+
+### 배포 준비
+
+```bash
+# 버전 업데이트 (package.json의 version 필드)
+npm version patch  # or minor, major
+
+# 빌드 및 테스트
+npm run build
+npm run lint
+npm run format:check
+```
+
+### npm 배포 (npmjs.com에 계정 필요)
+
+```bash
+# npm 로그인
+npm login
+
+# 배포
+npm publish
+```
+
+### 배포 후 사용법
+
+#### npm 전역 설치
+
+```bash
+# 최신 버전 설치
+npm install -g markdown-to-docx
+
+# 또는 특정 버전 설치
+npm install -g markdown-to-docx@1.0.0
+
+# 업그레이드
+npm install -g markdown-to-docx@latest
+```
+
+#### 명령어 사용
+
+```bash
+# 기본 사용
+markdown-to-docx --input "파일.md"
+
+# 모든 옵션
+markdown-to-docx --input "문서.md" --output "결과.docx" --font "Arial"
+
+# 버전 확인
+markdown-to-docx --version
+```
+
+#### 프로젝트에서 라이브러리로 사용
+
+```bash
+npm install markdown-to-docx
+```
+
+JavaScript 또는 TypeScript 코드에서:
+
+```javascript
+const { convertMarkdownToDOCX } = require("markdown-to-docx");
+// 또는
+import { convertMarkdownToDOCX } from "markdown-to-docx";
+```
+
 ## 예제
 
-### 예제 1: 기본 CLI 사용
+### 예제 1: CLI 전역 설치 후 사용
 
 ```bash
-node cli.js --input "meeting_notes.md"
+# 설치
+npm install -g markdown-to-docx
+
+# 사용
+markdown-to-docx --input "meeting_notes.md" --output "회의록.docx"
 ```
 
-### 예제 2: 라이브러리 기본 사용
+### 예제 2: 로컬 저장소에서 빌드 후 CLI 사용
 
 ```bash
-node examples/basic-usage.js
+# 저장소 클론
+git clone https://github.com/your-username/markdown-to-docx.git
+cd markdown-to-docx
+
+# 설치 및 빌드
+npm install
+npm run build
+
+# 전역 등록
+npm link
+
+# 사용
+markdown-to-docx --input "파일.md"
 ```
 
-### 예제 3: 라이브러리 고급 사용
+### 예제 3: 프로젝트에 라이브러리로 추가
 
 ```bash
-node examples/advanced-usage.js
+# npm 패키지 설치
+npm install markdown-to-docx
+
+# Node.js 코드
+const { convertMarkdownToDOCX } = require("markdown-to-docx");
 ```
 
 ## 라이선스
