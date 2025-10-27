@@ -13,10 +13,11 @@
 
 ### Key Files & Responsibilities
 
-- **`src/markdownParser.ts`**: Core parser with regex-based element detection (headings, lists, tables, checkboxes). **Special handling**: HTML markup (tags, comments) temporarily converted to `\u0001` markers to prevent interference with parsing.
+- **`src/markdownParser.ts`**: Core parser with regex-based element detection (headings, lists, tables, checkboxes, images). **Special handling**: HTML markup (tags, comments) temporarily converted to `\u0001` markers to prevent interference with parsing.
 - **`src/inlineFormatter.ts`**: Text styling layer that recurses through markdown inline syntax to build TextRun arrays compatible with `docx` library.
-- **`src/docxBuilder.ts`**: Stateful builder class that accumulates elements and generates styled Word documents. Uses `docx` library's Document/Paragraph/Table APIs.
-- **`src/index.ts`**: Public API - single entry point for library usage. Orchestrates parser → builder → file save flow.
+- **`src/docxBuilder.ts`**: Stateful builder class that accumulates elements and generates styled Word documents. Uses `docx` library's Document/Paragraph/Table APIs. Manages image loading and metadata.
+- **`src/imageLoader.ts`**: Image loading utility (NEW). Handles local file I/O, HTTP(S) remote image downloads, MIME type detection, and error handling with graceful fallback.
+- **`src/index.ts`**: Public API - single entry point for library usage. Orchestrates parser → builder → file save flow. Passes markdown file directory to DocxBuilder for relative image path resolution.
 - **`src/cli.ts`**: CLI entry point. Parses `--input`, `--output`, `--font` arguments and delegates to `index.ts`.
 
 ## TypeScript Patterns & Conventions
@@ -26,7 +27,7 @@ Elements use discriminated union pattern:
 ```typescript
 export type ParsedElement = 
   | TableElement | CheckboxElement | HeadingElement 
-  | ListElement | BlockquoteElement | ParagraphElement;
+  | ListElement | BlockquoteElement | ParagraphElement | ImageElement;
 ```
 When adding new element types, update `ParsedElement` union and add corresponding `add<Type>` method to DocxBuilder.
 
@@ -75,8 +76,40 @@ Test files use CRLF; parser normalizes via `.replace(/\r\n/g, '\n')` at start of
 All formatting functions accept `fontFamily` parameter (default: "맑은 고딕"). Pass through every call chain: CLI → index → builder → formatters. Inconsistent fonts break document appearance.
 
 ### DOCX Library Limitations
-- Images require binary data or file paths; HTTP downloads not implemented (displays as text placeholder).
-- Custom colors/styles use hex codes; keep palette simple (test in DOCX before committing).
+- Images are loaded but rendered as `[Image: alt_text]` placeholders in current implementation.
+- For actual embedded images in DOCX: Requires `docx` library's `Media` API (complex setup) or alternatives like `PptxGenJs`.
+- HTTP(S) image downloads supported via `imageLoader.ts` with timeouts and MIME type detection.
+- Local images loaded via `basePath` parameter in DocxBuilder (relative to markdown file directory).
+
+## Image Processing
+
+### Implementation Flow
+1. **Parsing**: `parseImageMarkdown()` in `markdownParser.ts` detects `![alt](src)` syntax (standalone lines only, not inline).
+2. **Loading**: `loadImage()` in `imageLoader.ts` determines if `src` is local path or HTTP(S) URL.
+   - **Local**: Read file sync with `fs.readFileSync()`, resolve relative paths via `basePath`.
+   - **Remote**: Async fetch via `fetch()` (Node.js 18+) or http/https modules (Node.js <18) with 10s timeout.
+3. **Building**: `addImage()` in `docxBuilder.ts` currently renders image as placeholder text (future enhancement for actual embedding).
+4. **Error handling**: Failed image loads gracefully display `[Image Error: reason]` instead of crashing.
+
+### Adding Real Image Support (Future)
+To embed actual images in DOCX:
+1. Store image buffers in `DocxBuilder.media: Map<string, Buffer>`.
+2. Use `docx` library's undocumented `_imageIds` or switch to document-level `Media` registration.
+3. Insert `ImageRun` objects in paragraph children (requires `docx` v10+).
+4. Update `build()` method to include media section in document XML.
+5. Test with compressed/optimized images to manage file size.
+
+### Image Syntax & Options
+Supported markdown syntax for images:
+- Local file paths: relative or absolute paths to image files
+- Remote HTTP URLs: full URL to image hosted online
+- Optional sizing: dimensions specified in curly braces
+
+Common patterns (see tests/test_features.md for examples):
+1. Standalone image: image link on its own line
+2. Local paths resolved relative to markdown file directory
+3. Remote images auto-downloaded with 10s timeout
+4. Fallback to text placeholder on load failure
 
 ## Code Quality Tooling
 
