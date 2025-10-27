@@ -523,7 +523,9 @@ const { convertMarkdownToDOCX } = require("markdown-to-docx");
 
 ## 라이선스
 
-ISC
+BSD 3-Clause License - 자유로운 사용 및 배포 가능합니다.
+
+자세한 내용은 [LICENSE](./LICENSE) 파일을 참고하세요.
 
 ## 참고 자료
 

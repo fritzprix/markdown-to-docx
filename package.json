@@ -2,7 +2,7 @@
   "name": "markdown-to-docx",
   "version": "1.0.0",
   "description": "마크다운 파일을 Word(DOCX) 문서로 변환합니다. 테이블, 링크, 이미지, 체크박스 등을 지원합니다.",
-  "license": "ISC",
+  "license": "BSD-3-Clause",
   "author": "",
   "type": "commonjs",
   "main": "dist/index.js",

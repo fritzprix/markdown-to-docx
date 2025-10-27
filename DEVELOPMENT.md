@@ -224,7 +224,9 @@ npm run format
 
 ## 라이센스
 
-ISC
+BSD 3-Clause License
+
+자세한 내용은 프로젝트 루트의 [LICENSE](./LICENSE) 파일을 참고하세요.
 
 ## 기여
 
