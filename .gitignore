@@ -1,0 +1,51 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 출력 파일
+*.docx
+*_output.docx
+
+# 임시 파일
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# 에디터/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 로그 파일
+*.log
+
+# 환경 변수
+.env
+.env.local
+
+# 백업 파일
+*.bak
+*.old
+
+# Python (이전 버전 흔적)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
